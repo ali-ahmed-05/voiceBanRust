@@ -4,12 +4,25 @@
 
 use ink_storage::collections::{Vec, HashMap, Stash, Bitvec };
 use ink_lang as ink;
+use rand::prelude::*;
+
+
+ 
+
+// #[derive(Clone, Debug)]
+// pub struct ThreadRng {
+//     // Rc is explictly !Send and !Sync
+//     rng: Rc<UnsafeCell<ReseedingRng<Core, OsRng>>>,
+// }
 
 
 
 #[ink::contract]
 mod login {
     use ink_prelude::string::String;
+   
+   // use rand::rngs::ThreadRng;
+    // use rand::thread_rng;
     /// Defines the storage of your contract.
     /// Add new fields to the below struct in order
     /// to add new static storage fields to your contract.
@@ -24,8 +37,9 @@ mod login {
         // }
         /// Stores a single `bool` value on the storage.
         value: bool,
+        
       
-      //  first: ink_storage::Vec<u64>,
+        // first: ink_storage::Vec<u64>,
         // userdetail: UserDetail, 
        
 
@@ -48,6 +62,7 @@ mod login {
        _logged: ink_storage::collections::HashMap<(String,String),bool>,
      //   user_detail: ink_storage::collections::HashMap<AccountId,userdetail>,
          forget: ink_storage::collections::HashMap<String,bool>,
+         user_detail:ink_storage::collections::HashMap<String,(String,String,String)>,
 
     }
     // mapping (bytes32=>bytes32) emaiToPassword;
@@ -81,7 +96,10 @@ mod login {
                 _logged:Default::default(),
                 email_password:Default::default(),
                 forget:Default::default(),
-             // email_password: Default::default(),
+                user_detail : Default::default(),
+                
+              
+            // email_password: Default::default(),
             //     username_exist: Default::default(),
             //     forget: Default::default(),
             // }
@@ -90,10 +108,7 @@ mod login {
         /// Constructor that initializes the `bool` value to `false`.
         ///
         /// Constructors can delegate to other constructors.
-        #[ink(constructor)]
-        pub fn default() -> Self {
-            Self::new(Default::default())
-        }
+     
 
         /// A message that can be called on instantiated contracts.
         /// This one flips the value of the stored `bool` from `true`
@@ -111,27 +126,78 @@ mod login {
        
         
         #[ink(message)]
-        pub fn signup(&mut self, _email : String, _pass : String) -> bool {
-           // let caller = self.env().caller();
-           #[derive(item:item)]
-          let x = _email; 
-           
-            self.is_user.insert(_email, true);
-          //  borrow(_email);
-            
-            //    self.email_password.insert(_email, _pass);
-            
-           // self.email_password.insert(,_pass);
+        pub fn signup(&mut self, 
+            _email : String, 
+            _pass : String , 
+            first_name : String ,
+            last_name : String ,
+            user_name : String) -> bool {
+        // let caller = self.env().caller();
+        //    #[derive(item:item)]
+        //   let x = _email; 
+        let mut email:String = String::from(_email);
+        let mut pass:String = String::from(_pass);
+        let copy2_email = email.clone();
+        let copy2_pass = pass.clone();
+        let checklog = self._logged.contains_key(&(copy2_email,copy2_pass));
+
+        if checklog == true{
+            return false;
+        }
+
+        let copy_email = email.clone();
+        let copy1_email = email.clone();
+        let copy1_pass = pass.clone();
+        let copy3_email = email.clone();
+       
+         self.is_user.insert(email, true);   
+         self.email_password.insert(copy_email, pass);
+         self._logged.insert((copy1_email,copy1_pass), true);
+         self.user_detail.insert(copy3_email, (first_name,last_name,user_name));
+      //   let mut rng = thread_rng();
+
+        
             return true;
-        } 
+        }
          
 
        #[ink(message)]
         pub fn is_user(&self, _email : String) -> bool{
-            let caller = self.env().caller();
-            let is = self.is_user.get(&_email).unwrap_or(&false);
-            *is       
+            let is = self.is_user.contains_key(&_email);
+            return is;       
         }
+
+        #[ink(message)]
+        pub fn login(&mut self, _email : String, _pass : String) -> bool{
+
+        let mut email:String = String::from(_email);
+        let mut pass:String = String::from(_pass);
+        let copy2_email = email.clone();
+        let copy2_pass = pass.clone();
+        let checklog = self._logged.contains_key(&(copy2_email,copy2_pass));
+        let checkuser = self.is_user.contains_key(&email);
+     //   let mut rng = thread_rng();
+        if checkuser {
+
+            if checklog == true{
+            return false;
+            }
+        }
+        return true;
+        }
+        
+     //   #[ink(message)]
+        // pub fn getUserDetails(&mut self, _email : String) -> (String,String,String,String){
+        //     let mut email:String = String::from(_email);
+        //     let copy_email = email.clone();
+        //     let detail = self.is_user.get(&email).unwrap_or(&false);
+        //     let first_name:String= String::from(detail::<{ (String as From<T>)<<&String }>);
+        //   //  let (first_name,last_name,user_name) = detail;
+            
+        //     return (copy_email,first_name,last_name,user_name);
+
+        // }
+        
     }
     
     /// Unit tests in Rust are normally defined within such a `#[cfg(test)]`
@@ -148,6 +214,7 @@ mod login {
         /// We test if the default constructor does its job.
         #[ink::test]
         fn default_works() {
+
             let login = Login::default();
             assert_eq!(login.get(), false);
         }
@@ -182,3 +249,11 @@ mod login {
 //     bytes32 _email = stringToBytes32(_toLower(email));
 //    return _isUser[_email];
 // } 
+
+// function login(string memory email ,string memory password) public view returns(bool){
+//     bytes32 _email = stringToBytes32(_toLower(email));
+//     require(_isUser[_email]==true,"This email is not registered");
+//     bytes32 _password = toHash(_toLower(password));
+//     require(_logged[_email][_password]==true , "please provide correct password");
+//     return true;
+// }
