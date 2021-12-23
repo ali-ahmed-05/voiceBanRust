@@ -1,4 +1,7 @@
 "# voiceBanRust" 
+
+Steps:
+
 1. run node https://github.com/paritytech/substrate-contracts-node
 
 2. install ink Prerequisites https://docs.substrate.io/tutorials/v3/ink-workshop/pt1/#prerequisites
