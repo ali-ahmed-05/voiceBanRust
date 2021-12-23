@@ -104,6 +104,10 @@ mod login {
             //     forget: Default::default(),
             // }
         }}
+        #[ink(constructor)]
+        pub fn default() -> Self {
+            Self::new(Default::default())
+        }
 
         /// Constructor that initializes the `bool` value to `false`.
         ///
@@ -179,7 +183,7 @@ mod login {
      //   let mut rng = thread_rng();
         if checkuser {
 
-            if checklog == true{
+            if !checklog {
             return false;
             }
         }
@@ -221,12 +225,40 @@ mod login {
 
         /// We test a simple use case of our contract.
         #[ink::test]
-        fn it_works() {
+        fn not_signed() {
             let mut login = Login::new(false);
-            assert_eq!(login.get(), false);
-            login.flip();
-            assert_eq!(login.get(), true);
+            let mut email:String = String::from("acb@gmail.com");
+            assert_eq!(login.is_user(email), false);
         }
+        #[ink::test]
+        fn it_signs() {
+            let mut login = Login::new(false);
+            let mut email:String = String::from("acb@gmail.com");
+            assert_eq!(login.is_user(email), false);
+            login.signup( 
+                "acb@gmail.com".to_string(),
+                "a".to_string() , 
+                "first_name".to_string(),
+                "last_name".to_string(),
+                "user_name".to_string());
+                assert_eq!(login.is_user("acb@gmail.com".to_string()), true);
+        }
+        #[ink::test]
+        fn it_Logins() {
+            let mut login = Login::new(false);
+            let mut email:String = String::from("acb@gmail.com");
+            assert_eq!(login.is_user(email), false);
+            login.signup( 
+                "acb@gmail.com".to_string(),
+                "a".to_string() , 
+                "first_name".to_string(),
+                "last_name".to_string(),
+                "user_name".to_string());
+                assert_eq!(login.is_user("acb@gmail.com".to_string()), true);
+           let mut log =  login.login("acb@gmail.com".to_string(),"a".to_string());
+           assert_eq!(log, true);
+        }
+        
     }
 }
 // function signup(string memory email ,
